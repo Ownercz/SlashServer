@@ -12,8 +12,6 @@ Note: Server commands and permission nodes are the lowercase form of the server 
 
 /ssreload reloads the plugin and required the permission node slashserver.reload
 
-## Download
-Visit the latest [Build Action](https://github.com/Willsr71/SlashServer/actions/workflows/build.yml?query=is%3Asuccess) and download the latest artifact at the bottom of the page.
 
 ## CI
 This project keeps both GitHub Actions and Gitea Actions builds.
