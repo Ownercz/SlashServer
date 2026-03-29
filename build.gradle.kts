@@ -17,7 +17,7 @@ repositories {
 }
 
 dependencies {
-    val velocityVersion = "3.3.0-SNAPSHOT"
+    val velocityVersion = "3.5.0-SNAPSHOT"
 
     compileOnly("com.velocitypowered:velocity-api:$velocityVersion")
     annotationProcessor("com.velocitypowered:velocity-api:$velocityVersion")

@@ -3,6 +3,7 @@ package sr.will.slashserver;
 
 import com.google.inject.Inject;
 import com.velocitypowered.api.command.CommandManager;
+import com.velocitypowered.api.command.CommandMeta;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.event.proxy.server.ServerRegisteredEvent;
@@ -19,11 +20,13 @@ public class SlashServer {
     @Inject
     private ProxyServer proxy;
     private final List<String> registeredCommands = new ArrayList<>();
+    private CommandMeta reloadCommandMeta;
 
     @Subscribe
     public void onProxyInitialize(ProxyInitializeEvent event) {
         CommandManager commandManager = proxy.getCommandManager();
-        proxy.getCommandManager().register(CommandReload.getCommand(this));
+        reloadCommandMeta = commandManager.metaBuilder("ssreload").build();
+        commandManager.register(reloadCommandMeta, CommandReload.getCommand(this));
 
         reload();
     }
@@ -50,7 +53,9 @@ public class SlashServer {
     }
 
     private void registerServerCommand(RegisteredServer server) {
-        proxy.getCommandManager().register(CommandServer.getCommand(server));
-        registeredCommands.add(server.getServerInfo().getName().toLowerCase());
+        String name = server.getServerInfo().getName().toLowerCase();
+        CommandMeta commandMeta = proxy.getCommandManager().metaBuilder(name).build();
+        proxy.getCommandManager().register(commandMeta, CommandServer.getCommand(server));
+        registeredCommands.add(name);
     }
 }

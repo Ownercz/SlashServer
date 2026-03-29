@@ -1,0 +1,61 @@
+name: Build SlashServer
+run-name: Build SlashServer jar
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build with Gradle
+        run: ./gradlew build
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: slashserver
+          path: build/libs/slashserver-*.jar
+          if-no-files-found: error
+          overwrite: true
+
+      - name: Upload jar to remote target
+        if: ${{ secrets.JAR_UPLOAD_URL != '' }}
+        env:
+          JAR_UPLOAD_URL: ${{ secrets.JAR_UPLOAD_URL }}
+          JAR_UPLOAD_USERNAME: ${{ secrets.JAR_UPLOAD_USERNAME }}
+          JAR_UPLOAD_PASSWORD: ${{ secrets.JAR_UPLOAD_PASSWORD }}
+        run: |
+          set -e
+          jar_file=$(find build/libs -maxdepth 1 -type f -name 'slashserver-*.jar' | head -n 1)
+          if [ -z "$jar_file" ]; then
+            echo 'No jar found to upload.'
+            exit 1
+          fi
+
+          if [ -n "$JAR_UPLOAD_USERNAME" ]; then
+            curl --fail --show-error --silent \
+              --user "$JAR_UPLOAD_USERNAME:$JAR_UPLOAD_PASSWORD" \
+              -T "$jar_file" \
+              "$JAR_UPLOAD_URL"
+          else
+            curl --fail --show-error --silent \
+              -T "$jar_file" \
+              "$JAR_UPLOAD_URL"
+          fi
