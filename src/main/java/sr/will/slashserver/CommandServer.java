@@ -9,8 +9,13 @@ public class CommandServer {
     public static BrigadierCommand getCommand(RegisteredServer server) {
         String name = server.getServerInfo().getName().toLowerCase();
         return new BrigadierCommand(BrigadierCommand.literalArgumentBuilder(name)
-                .requires(cs -> cs.hasPermission("slashserver." + name))
-                .requires(cs -> cs instanceof Player)
+                // single predicate: Brigadier's requires() replaces, it does not chain.
+                // Hidden on the target server itself so backend commands with the same name (e.g. /gungame) still work.
+                .requires(cs -> cs instanceof Player player
+                        && cs.hasPermission("slashserver." + name)
+                        && player.getCurrentServer()
+                                .map(conn -> !conn.getServer().equals(server))
+                                .orElse(true))
                 .executes(ctx -> {
                     Player player = (Player) ctx.getSource();
                     player.createConnectionRequest(server).fireAndForget();
